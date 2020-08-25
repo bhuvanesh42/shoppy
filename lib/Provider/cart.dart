@@ -17,10 +17,19 @@ class Cart with ChangeNotifier {
 
   Map<String, CartItem> get item {
     return {..._items};
-}
-int get itemcount {
+  }
+
+  int get itemcount {
     return _items.length;
-}
+  }
+
+  double get totalamount {
+    var total = 0.0;
+    _items.forEach((key, cartitem) {
+      total += cartitem.price * cartitem.quantity;
+    });
+    return total;
+  }
 
   void additem(String productid, double price, String title) {
     if (_items.containsKey(productid)) {
@@ -38,4 +47,31 @@ int get itemcount {
     }
     notifyListeners();
   }
+
+  void removeitem(String productid) {
+    _items.remove(productid);
+    notifyListeners();
+  }
+
+  void clear() {
+    _items = {};
+    notifyListeners();
+  }
+
+  void removefromcart(String productid) {
+    if (!_items.containsKey(productid)) {
+      return;
+    }
+    if (_items[productid].quantity > 1) {
+      _items.update(productid, (ex) =>
+          CartItem(id: ex.id,
+              title: ex.title,
+              price: ex.price,
+              quantity: ex.quantity - 1));
+    }else{
+      _items.remove(productid);
+    }
+    notifyListeners();
+  }
+
 }
