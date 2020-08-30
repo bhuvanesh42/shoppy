@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shoppy/Provider/cart.dart';
+import 'package:shoppy/Provider/products.dart';
 import 'package:shoppy/Screen/cart_screen.dart';
 import 'package:shoppy/Widgets/app_drawer.dart';
 import 'package:shoppy/Widgets/badge.dart';
@@ -16,6 +17,32 @@ class ProductOverViewScreen extends StatefulWidget {
 
 class _ProductOverViewScreenState extends State<ProductOverViewScreen> {
   var _showonlyfavorites = false;
+  var _initit = true;
+  var loading = false;
+   @override
+  void initState() {
+    // TODO: implement initState
+     /*Provider.of<Products>(context).fetchdata();*/
+    super.initState();
+  }
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    if (_initit) {
+      setState(() {
+        loading = true;
+      });
+
+       Provider.of<Products>(context).fetchdata().then((_) {
+        setState(() {
+          loading = false;
+        });
+      });
+
+      _initit = false;
+      super.didChangeDependencies();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +73,25 @@ class _ProductOverViewScreenState extends State<ProductOverViewScreen> {
             icon: Icon(Icons.more_vert),
           ),
           Consumer<Cart>(
-            builder: (_, cart, ch) => Badge(child: ch, value: cart.itemcount.toString()),
-            child: IconButton(icon: Icon(Icons.shopping_cart, color: Colors.white,), onPressed: (){
-              Navigator.of(context).pushNamed(CartScreen.routname);
-            }),
+            builder: (_, cart, ch) =>
+                Badge(child: ch, value: cart.itemcount.toString()),
+            child: IconButton(
+                icon: Icon(
+                  Icons.shopping_cart,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(CartScreen.routname);
+                }),
           )
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductGrid(_showonlyfavorites),
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductGrid(_showonlyfavorites),
     );
   }
 }
