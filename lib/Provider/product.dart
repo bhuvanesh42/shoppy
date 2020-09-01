@@ -19,15 +19,15 @@ class Product with ChangeNotifier {
       this.isFavorites = false,
       @required this.price});
 
-  Future<void> toggelestatus() async{
+  Future<void> toggelestatus(String token, String userid) async{
     final oldstatus = isFavorites;
     isFavorites = !isFavorites;
     notifyListeners();
-    final url = 'https://flutter-shop-3c829.firebaseio.com/products/$id.json';
+    final url = 'https://flutter-shop-3c829.firebaseio.com/userfavories/$userid/$id.json?auth=$token';
     try{
-      await http.patch(url, body:  json.encode({
-        'isFavorite' : isFavorites,
-      }));
+      await http.put(url, body:  json.encode(
+        isFavorites,
+      ));
     }catch(error){
       isFavorites = oldstatus;
       notifyListeners();

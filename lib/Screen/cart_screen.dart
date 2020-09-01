@@ -32,24 +32,12 @@ class CartScreen extends StatelessWidget {
                   ),
                   Chip(
                     label: Text(
-                       '\$ ${cart.totalamount.toStringAsFixed(2)}',
+                      '\$ ${cart.totalamount.toStringAsFixed(2)}',
                       style: TextStyle(color: Colors.white),
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                      onPressed: () {
-                        Provider.of<Order>(context, listen: false).addorder(
-                            cart.item.values.toList(), cart.totalamount);
-                        cart.clear();
-                      },
-                      child: Text(
-                        'Order Now',
-                        style: TextStyle(
-                            fontFamily: 'KirangHaerang-Regular',
-                            fontSize: 20,
-                            color: Colors.blueGrey),
-                      ))
+                  NewWidget(cart: cart)
                 ],
               ),
             ),
@@ -66,9 +54,51 @@ class CartScreen extends StatelessWidget {
                 cart.item.values.toList()[i].quantity,
                 cart.item.values.toList()[i].title),
             itemCount: cart.item.length,
-          ))
+          )),
         ],
       ),
     );
+  }
+}
+
+class NewWidget extends StatefulWidget {
+  const NewWidget({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _NewWidgetState createState() => _NewWidgetState();
+}
+
+class _NewWidgetState extends State<NewWidget> {
+  var _isloading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+        onPressed: (widget.cart.totalamount <= 0 || _isloading)
+            ? null
+            : () async {
+          setState(() {
+            _isloading = true;
+          });
+               await Provider.of<Order>(context, listen: false)
+                    .addorder(widget.cart.item.values.toList(),
+                        widget.cart.totalamount);
+          setState(() {
+            _isloading = false;
+          });
+                widget.cart.clear();
+              },
+        child: _isloading ? CircularProgressIndicator() :  Text(
+          'Order Now',
+          style: TextStyle(
+              fontFamily: 'KirangHaerang-Regular',
+              fontSize: 20,
+              color: Colors.blueGrey),
+        ));
   }
 }
