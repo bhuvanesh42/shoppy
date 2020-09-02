@@ -89,7 +89,8 @@ class AuthCard extends StatefulWidget {
   _AuthCardState createState() => _AuthCardState();
 }
 
-class _AuthCardState extends State<AuthCard> {
+class _AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode _authMode = AuthMode.Login;
   Map<String, String> _authData = {
@@ -98,12 +99,37 @@ class _AuthCardState extends State<AuthCard> {
   };
   var _isLoading = false;
   final _passwordController = TextEditingController();
+  AnimationController controller;
+  Animation<Size> heightanimation;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    heightanimation = Tween<Size>(
+            begin: Size(double.infinity, 260), end: Size(double.infinity, 320))
+        .animate(
+            CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn));
+    /*heightanimation.addListener(() => setState(() {}));*/
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    controller.dispose();
+  }
 
   void showdialogmessege(String messege) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text('An error occurred', style: TextStyle(color: Colors.black),),
+              title: Text(
+                'An error occurred',
+                style: TextStyle(color: Colors.black),
+              ),
               content: Text(messege),
               actions: <Widget>[
                 FlatButton(
@@ -163,10 +189,12 @@ class _AuthCardState extends State<AuthCard> {
       setState(() {
         _authMode = AuthMode.Signup;
       });
+      controller.forward();
     } else {
       setState(() {
         _authMode = AuthMode.Login;
       });
+      controller.reverse();
     }
   }
 
@@ -178,12 +206,16 @@ class _AuthCardState extends State<AuthCard> {
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 8.0,
-      child: Container(
-        height: _authMode == AuthMode.Signup ? 320 : 260,
-        constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 320 : 260),
-        width: deviceSize.width * 0.75,
-        padding: EdgeInsets.all(16.0),
+      child: AnimatedBuilder(
+        animation: heightanimation,
+        builder: (ctx, ch) => Container(
+            /*height: _authMode == AuthMode.Signup ? 320 : 260,*/
+            height: heightanimation.value.height,
+            constraints:
+                BoxConstraints(minHeight: heightanimation.value.height),
+            width: deviceSize.width * 0.75,
+            padding: EdgeInsets.all(16.0),
+            child: ch),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
